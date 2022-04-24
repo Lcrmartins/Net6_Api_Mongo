@@ -7,7 +7,7 @@ namespace Net6.Api.Mongo.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class PeopleController:ControllerBase
+public class PeopleController : ControllerBase
 {
     private readonly IPeopleRepository _ipeopleRepository;
 
@@ -17,7 +17,7 @@ public class PeopleController:ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPeopleAsync()
+    public async Task<IActionResult> Get()
     {
         var people = await _ipeopleRepository.GetAllAsync();
         return Ok(people);
@@ -25,21 +25,25 @@ public class PeopleController:ControllerBase
 
     [HttpGet]
     [Route("{id}")]
-    public async Task<IActionResult> GetPeopleByIdAsync(string id)
+    public async Task<IActionResult> Get(string id)
     {
         var people = await _ipeopleRepository.GetByIdAsync(id);
-        return (people==null)? NotFound() : Ok(people);
+        if (people == null)
+        {
+            return NotFound();
+        } 
+        return Ok(people);
     }
 
     [HttpPost]
-    public async Task<IActionResult> PostAsync(People newPeople)
+    public async Task<IActionResult> Post(People newPeople)
     {
         await _ipeopleRepository.CreateNewPeopleAsync(newPeople);
-        return CreatedAtAction(nameof(GetPeopleByIdAsync), new { id = newPeople.Id }, newPeople);
+        return CreatedAtAction(nameof(Get), new { id = newPeople.Id }, newPeople);
     }
 
     [HttpPut]
-    public async Task<IActionResult> PutAsync(People updatePeople)
+    public async Task<IActionResult> Put(People updatePeople)
     {
         var people = await _ipeopleRepository.GetByIdAsync(updatePeople.Id);
         if (people == null)
@@ -47,11 +51,11 @@ public class PeopleController:ControllerBase
             return NotFound();
         }
         await _ipeopleRepository.UpdatePeopleAsync(updatePeople);
-        return NoContent();
+        return Ok("Object updated.");
     }
 
     [HttpDelete]
-    public async Task<IActionResult> DeleteAsync(string id)
+    public async Task<IActionResult> Delete(string id)
     {
         var people = await _ipeopleRepository.GetByIdAsync(id);
         if (people == null)
@@ -59,6 +63,6 @@ public class PeopleController:ControllerBase
             return NotFound();
         }
         await _ipeopleRepository.DeletePeopleAsync(id);
-        return NoContent();
+        return Ok("Object deleted.");
     }
 }
